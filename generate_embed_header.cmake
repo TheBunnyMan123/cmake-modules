@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.20)
 set(EMBEDDER_SCRIPT_PATH "${CMAKE_CURRENT_LIST_FILE}")
 
 if(CMAKE_SCRIPT_MODE_FILE)
-	set(FINAL_CONTENT "#ifndef GENERATED_EMBEDS_H\n#define GENERATED_EMBEDS_H\n#import <stddef.h>")
+	set(FINAL_CONTENT "#ifndef GENERATED_EMBEDS_H\n#define GENERATED_EMBEDS_H\n#include <stddef.h>")
 
 
 	if(RECURSE)
