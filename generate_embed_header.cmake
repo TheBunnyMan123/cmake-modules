@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.20)
 set(EMBEDDER_SCRIPT_PATH "${CMAKE_CURRENT_LIST_FILE}")
 
 if(CMAKE_SCRIPT_MODE_FILE)
-	set(FINAL_CONTENT "#ifndef GENERATED_EMBEDS_H\n#define GENERATED_EMBEDS_H\n#include <stddef.h>")
+	set(FINAL_CONTENT "#ifndef ${MACRO}\n#define ${MACRO}\n#include <stddef.h>")
 
 
 	if(RECURSE)
@@ -26,7 +26,7 @@ if(CMAKE_SCRIPT_MODE_FILE)
 	endif()
 
 	foreach(FILE_TO_EMBED ${EMBEDS_GLOB})
-		get_filename_component(FILE_NAME "${FILE_TO_EMBED}" NAME_WE)
+		file(RELATIVE_PATH FILE_NAME "${IN_DIR}" "${FILE_TO_EMBED}")
 		file(READ "${FILE_TO_EMBED}" FILE_HEX HEX)
 
 		string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1, " FORMATTED_BYTES "${FILE_HEX}")
@@ -53,6 +53,7 @@ if(CMAKE_SCRIPT_MODE_FILE)
 endif()
 
 function(add_embed_header IN_DIR OUT_FILE VAR_PREFIX RECURSE NULL_TERMINATE)
+	string(MAKE_C_IDENTIFIER "${OUT_FILE}" OUT_FILE_C)
 	add_custom_command(
 		OUTPUT "${OUT_FILE}"
 		COMMAND	"${CMAKE_COMMAND}"
@@ -61,14 +62,13 @@ function(add_embed_header IN_DIR OUT_FILE VAR_PREFIX RECURSE NULL_TERMINATE)
 			"-DVAR_PREFIX=${VAR_PREFIX}"
 			"-DRECURSE=${RECURSE}"
 			"-DNULL_TERMINATE=${NULL_TERMINATE}"
+			"-DMACRO=GEN_${OUT_FILE_C}"
 			-P "${EMBEDDER_SCRIPT_PATH}"
 		DEPENDS "${INPUT_DIR}" "${EMBEDDER_SCRIPT_PATH}"
 		COMMENT "Generating ${OUT_FILE}"
 		VERBATIM)
 
-	string(MAKE_C_IDENTIFIER "${OUT_FILE}" OUT_FILE_C)
 	add_custom_target(generated_${OUT_FILE_C} ALL
 		DEPENDS "${OUT_FILE}"
 	)
 endfunction()
-
